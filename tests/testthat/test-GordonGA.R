@@ -12,8 +12,8 @@ dataSource <- data.frame(
   weight= c(0.5,1,1,1,0.5)
 );
 config <- list(
-  iters           = 50,
-  population.size = 20,
+  iters           = 60,
+  population.size = 30,
   chromosome.size = length(dataSource$price),
   mutate.rate     = 0.5
 );
