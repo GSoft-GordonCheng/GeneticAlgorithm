@@ -1,9 +1,16 @@
-#context("TDD")
-# test_that("t1", function() {
-#   a <- t1(3, 5);
-#   expect_equal(a, 8)
-# })
-# define your config/parameters...
+---
+title: "Gordon's Lab"
+output:
+  html_document: default
+  html_notebook: default
+---
+
+針對航空公司主要的收入來源—求取最佳獲利能力
+
+* * *
+
+*    [參數](#overview)
+```{r}
 dataSource <- data.frame(
   seat  = 1000,
   cost  = 100000,
@@ -12,12 +19,17 @@ dataSource <- data.frame(
   weight= c(0.5,1,1,1,0.5)
 );
 config <- list(
-  iters           = 100,
+  iters           = 60,
   population.size = 30,
   chromosome.size = length(dataSource$price),
   mutate.rate     = 0.5
 );
+```
 
+*    [Initial Population](#overview)
+    *    平均分散法
+    *    預期乘坐率
+```{r}
 population.initial <- function(
 ) {
   # TODO : implement initialization function/interface
@@ -31,7 +43,10 @@ population.initial <- function(
   }
   return (result);
 }
-#
+```
+
+*    [Fitness function](#overview)
+```{r}
 chromosome.fitness <- function(chromosome
 ) {
   # TODO : implement fintness function/interface
@@ -52,7 +67,15 @@ chromosome.fitness <- function(chromosome
   }
   sum(values);
 }
-#
+```
+*    [Encoding schemes](#overview)
+    *    chromosomes
+    
+*    [Selection function](#overview)
+    *    選取兩組最好的組合
+         *    當前世代
+         *    祖先世代 (跨代)
+```{r}
 population.selection <- function(dataset,
                                  iters,
                                  current=NA,
@@ -74,7 +97,13 @@ population.selection <- function(dataset,
   rbind(c1, c2);
 }
 
-#
+```
+
+*    [Crossover function](#overview)
+    *    跨世代隨機選擇半數基因
+         *    父世代：２組
+         *    子世代：１組
+```{r}
 chromosome.crossover <- function(dataset
 ) {
   # TODO : implement crossover function/interface
@@ -98,8 +127,13 @@ chromosome.crossover <- function(dataset
   }
   child;
 }
-
-#
+```
+*    [Mutation function](#overview)
+    *    隨機突變：
+    *    週期突變：２代
+    *    突變範圍：半數基因
+    *    突變參數：乘坐率 (not yet)
+```{r}
 chromosome.mutation <- function(chromosome,
                                 iters
 ) {
@@ -120,7 +154,12 @@ chromosome.mutation <- function(chromosome,
   }
   chrom
 }
-#
+```
+
+*    TODO: GA Flowchart
+
+*    演算結束回呼方法
+```{r}
 onFinalize <-function(dataset,
                       lastPopulation=NA,
                       callback=NA
@@ -131,7 +170,10 @@ onFinalize <-function(dataset,
     callback(bestObj);
   }
 }
-#
+```
+
+*    獲取最佳物件的實作方法
+```{r}
 getBestObj <- function(dataset, callback=NA) {
   idx <- which.max(dataset[, 1]);
   bestObj <- dataset[idx, ];
@@ -141,7 +183,12 @@ getBestObj <- function(dataset, callback=NA) {
   }
   return(bestObj);
 }
+```
 
+*    Evaluate Chromosomes
+
+```
+library("gcga");
 GAmodel <- gcga(iters = config$iters,
                 population.size = config$population.size,
                 chromosome.size = config$chromosome.size,
@@ -151,44 +198,6 @@ GAmodel <- gcga(iters = config$iters,
                 onCrossover     = chromosome.crossover,
                 onMutation      = chromosome.mutation,
                 onFinalize      = onFinalize);
-# p <- 1;
-# for (i in 1:GAmodel$iters){
-#   population <- GAmodel$dataset$Generation[[i]];
-#   for (j in 1:GAmodel$population.size) {
-#     chrom <- population[j, 2:GAmodel$chromosome.size];
-#     value <- population[j, 1];
-#     strChrom <- paste(chrom, collapse = ',')
-#     print(sprintf("population:%d, value:%d, chromosome:%s", p, value, strChrom));
-#     p <- p + 1;
-#   }
-# }
+```
 
-# draw it!
-FV <- as.integer(GAmodel$dataset$Elitism[, 1] / 10000);
-GN <- c(1:GAmodel$iters);
-AGE<- as.factor(as.integer(GN/100)+1);
-DS <- data.frame(cbind(FV, GN));
-ggplot() +
-  # Scatter Diagram(Scatter Plot)
-  geom_point(aes(x=DS$GN, y=DS$FV, color=AGE)
-  ) +
-  # Trendline
-  geom_smooth(aes(x=DS$GN, y=DS$FV)
-  ) +
-  # Annotation
-  labs(title="Gordon's Scatter of Genetic Algorithm",
-       x="Generation",
-       y="FV (million)"
-  ) +
-  # background white: http://docs.ggplot2.org/current/ggtheme.html
-  theme_bw();
-
-#
-# TODO : UNIT TEST
-#
-#expect_equal(GAmodel$iters, config$iters)
-
-
-
-
-
+<img src="https://raw.githubusercontent.com/GordonChengTW/GeneticAlgorithm/master/gaplot.png" alt="Scatter of Genetic Algorithm">
